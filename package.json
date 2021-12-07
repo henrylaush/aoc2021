@@ -1,0 +1,15 @@
+{
+  "name": "aoc2021",
+  "version": "1.0.0",
+  "description": "avent of code 2021",
+  "repository": "git@github.com:henrylaush/aoc2021.git",
+  "author": "henrylaush@gmail.com",
+  "license": "MIT",
+  "scripts": {
+    "newDay": "cp -r template today",
+    "testSample": "cat today/sample.txt | node today/part1.mjs",
+    "testInput": "cat today/input.txt | node today/part2.mjs",
+    "part2": "cp today/part1.mjs today/part2.mjs",
+    "finishDay": "node scripts/finishDay.mjs"
+  }
+}
