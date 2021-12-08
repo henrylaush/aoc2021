@@ -7,8 +7,10 @@
   "license": "MIT",
   "scripts": {
     "newDay": "cp -r template today",
-    "testSample": "cat today/sample.txt | node today/part1.mjs",
-    "testInput": "cat today/input.txt | node today/part2.mjs",
+    "testSample1": "cat today/sample.txt | node today/part1.mjs",
+    "testInput1": "cat today/input.txt | node today/part1.mjs",
+    "testSample2": "cat today/sample.txt | node today/part2.mjs",
+    "testInput2": "cat today/input.txt | node today/part2.mjs",
     "part2": "cp today/part1.mjs today/part2.mjs",
     "finishDay": "node scripts/finishDay.mjs"
   }
