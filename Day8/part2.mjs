@@ -20,60 +20,47 @@ const buildTable = (options) => {
 
 const gather = (getKey) => (array) => array.map(item => [getKey(item), item]).reduce((bag, [key, value]) => ({ ...bag, [key]: [...(bag[key] ?? []), value] }), {})
 
+const sortChars = (str) => str.split('').sort().join('');
+
 const genDigit = ([a,b,c,d,e,f,g]) => ([
-  a+b+c+e+f+g,
-  c+f,
-  a+c+d+e+g,
-  a+c+d+f+g,
-  b+c+d+f,
-  a+b+d+f+g,
-  a+b+d+e+f+g,
-  a+c+f,
-  a+b+c+d+e+f+g,
-  a+b+c+d+f+g,
-])
+  [a, b, c, e, f, g],
+  [c, f],
+  [a, c, d, e, g],
+  [a, c, d, f, g],
+  [b, c, d, f],
+  [a, b, d, f, g],
+  [a, b, d, e, f, g],
+  [a, c, f],
+  [a, b, c, d, e, f, g],
+  [a, b, c, d, f, g],
+]).map(d => d.sort().join(''));
 
-const compareArray = (arr1, arr2) => {
-  let same = true;
-  for(let i of arr1) {
-    same = same && (arr2.indexOf(i) > -1)
-  }
-  return same;
-}
+const compareArray = (arr1, arr2) => (
+  arr1.reduce((same, i) => same && (arr2.indexOf(i) > -1), true)
+)
 
-const sortChars = (str) => str.split('').sort().join('')
+const isEqual = (bag1, bag2) => (
+  Object.keys(bag1)
+    .map((key) => [bag1, bag2].map(bag => bag[key]))
+    .reduce((same, [arr1, arr2]) => same && compareArray(arr1, arr2), true)
+)
 
-const isEqual = (bag1, bag2) => {
-  let same = true;
-
-  for (let key of Object.keys(bag1)) {
-    if (!same) break;
-    const arr1 = bag1[key].map(sortChars);
-    const arr2 = bag2[key].map(sortChars);
-    same = same && compareArray(arr1, arr2)
-  }
-  return same;
-}
-
-const handleLine = (input, output, table, baggedTable, bagger) => {
+const handleLine = ([input, output], table, baggedTable, bagger) => {
   const inputBag = bagger(input);
-  const row = baggedTable.reduce((p, {bag, i}) => {
-    if(p) return p;
-    if (isEqual(bag, inputBag)) {
-      return i;
-    }
-  }, undefined)
-  const sorted = table[row].map(sortChars);
-  const sortedOutput = output.map(sortChars).map(i => sorted.indexOf(i));
+  const row = baggedTable.reduce((p, {bag, i}) => (
+    (p || !isEqual(bag, inputBag) ) ? p : i
+  ), undefined)
+  const sortedOutput = output.map(i => table[row].indexOf(i));
   return parseInt(sortedOutput.join(''));
 }
 
+const generatePossibleArrangements = () => buildTable(new Set('abcdefg')).map(genDigit);
+
 function processLines(lines) {
-  const set = new Set('abcdefg');
-  const table = buildTable(set).map(genDigit);
+  const table = generatePossibleArrangements();
   const bagger = gather(item => item.length);
-  const baggedTable = table.map(bagger).map((bag, i) => ({bag, i}));
-  const result = lines.map(line => handleLine(line[0], line[1], table, baggedTable, bagger));
+  const baggedTable = table.map(bagger).map((bag, i) => ({ bag, i }));
+  const result = lines.map(line => handleLine(line.map(l => l.map(sortChars)), table, baggedTable, bagger));
   return result.reduce((a,b) => a+b);
 }
 
