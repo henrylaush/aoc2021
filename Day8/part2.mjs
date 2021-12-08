@@ -8,6 +8,19 @@ const lines = [];
 function processLine(line) {
     lines.push(line.split(' | ').map(str => str.split(' ')));
 }
+
+// utils
+Object.defineProperties(Array.prototype, {
+  sum: {
+    value: function(getValue = id => id) { return this.reduce((partial, item) => partial + getValue(item), 0)}
+  },
+  gather: {
+    value: function(getKey = id => id, combiner = (existing, value) => ([...(existing ?? []), value])) { 
+      return this.map(item => [getKey(item), item]).reduce((bag, [key, value]) => ({ ...bag, [key]: combiner(bag[key], value) }), {})
+    }
+  }
+})
+
 // End template, start code
 const buildTable = (options) => {
   if (options.size === 1) return [...options.values()];
@@ -17,8 +30,6 @@ const buildTable = (options) => {
     return buildTable(nextSet).map(i => char + i);
   })
 }
-
-const gather = (getKey) => (array) => array.map(item => [getKey(item), item]).reduce((bag, [key, value]) => ({ ...bag, [key]: [...(bag[key] ?? []), value] }), {})
 
 const sortChars = (str) => str.split('').sort().join('');
 
@@ -35,21 +46,17 @@ const genDigit = ([a,b,c,d,e,f,g]) => ([
   [a, b, c, d, f, g],
 ]).map(d => d.sort().join(''));
 
-const compareArray = (arr1, arr2) => (
-  arr1.reduce((same, i) => same && (arr2.indexOf(i) > -1), true)
-)
+const compareArray = (arr1, arr2) => arr1.every(i => arr2.indexOf(i) > -1)
 
 const isEqual = (bag1, bag2) => (
   Object.keys(bag1)
     .map((key) => [bag1, bag2].map(bag => bag[key]))
-    .reduce((same, [arr1, arr2]) => same && compareArray(arr1, arr2), true)
+    .every(arrs => compareArray(...arrs))
 )
 
-const handleLine = ([input, output], table, baggedTable, bagger) => {
-  const inputBag = bagger(input);
-  const row = baggedTable.reduce((p, {bag, i}) => (
-    (p || !isEqual(bag, inputBag) ) ? p : i
-  ), undefined)
+const handleLine = ([input, output], table, baggedTable, gatherBy) => {
+  const inputBag = input.gather(gatherBy);
+  const row = baggedTable.findIndex(bag => isEqual(bag, inputBag));
   const sortedOutput = output.map(i => table[row].indexOf(i));
   return parseInt(sortedOutput.join(''));
 }
@@ -58,10 +65,9 @@ const generatePossibleArrangements = () => buildTable(new Set('abcdefg')).map(ge
 
 function processLines(lines) {
   const table = generatePossibleArrangements();
-  const bagger = gather(item => item.length);
-  const baggedTable = table.map(bagger).map((bag, i) => ({ bag, i }));
-  const result = lines.map(line => handleLine(line.map(l => l.map(sortChars)), table, baggedTable, bagger));
-  return result.reduce((a,b) => a+b);
+  const gatherBy = item => item.length;
+  const baggedTable = table.map(row => row.gather(gatherBy));
+  return lines.map(line => handleLine(line.map(l => l.map(sortChars)), table, baggedTable, gatherBy)).sum();
 }
 
 // End code, start template

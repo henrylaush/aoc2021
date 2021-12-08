@@ -11,8 +11,8 @@ function processLine(line) {
 }
 
 function groupByAges(fishes) {
-    const ages = [...Array(9)].map(() => 0); // 0 - 8 years old
-    for (let i of lines[0]) {
+    const ages = Array(9).fill(0); // 0 - 8 years old
+    for (let i of fishes) {
         ages[i] = ages[i] + 1;
     }
     return ages;

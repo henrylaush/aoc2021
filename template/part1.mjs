@@ -14,12 +14,6 @@ Object.defineProperties(Array.prototype, {
   sum: {
     value: function(getValue = id => id) { return this.reduce((partial, item) => partial + getValue(item), 0)}
   },
-  all: {
-    value: function(getValue = id => id) { return this.reduce((partial, item) => partial && !!getValue(item), true)}
-  },
-  any: {
-    value: function(getValue = id => id) { return this.reduce((partial, item) => partial || !!getValue(item), false)}
-  },
   gather: {
     value: function(getKey = id => id, combiner = (existing, value) => ([...(existing ?? []), value])) { 
       return this.map(item => [getKey(item), item]).reduce((bag, [key, value]) => ({ ...bag, [key]: combiner(bag[key], value) }), {})
