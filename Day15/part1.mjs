@@ -1,5 +1,7 @@
 import { createInterface } from 'readline';
-import { aStar } from '../utils.mjs';
+
+import '../utils.mjs';
+import aStar from '../tools/aStar.mjs';
 
 const rl = createInterface({
   input: process.stdin
@@ -12,9 +14,6 @@ function processLine(line) {
 }
 
 // End template, start code
-// Array + sort: Done in 39.18s.
-// Binary Heap: Done in 4.97s.
-
 const toKey = arr => arr.join('-');
 const fromKey = str => str.split('-').map(Number)
 
@@ -39,25 +38,12 @@ const h = ([endI, endJ]) => (ij) => {
   return (endI + endJ - i - j);
 };
 
-const fillMap = (map) => {
-  const [m0, m1, m2, m3, m4] = [...Array(5)].map((_ ,i) => map.map(row => row.map(r => ((r + i) >= 10) ? r + i - 9: r + i)))
-  return [
-    ...m0.map(row => [...Array(5)].flatMap((_ ,i) => row.map(r => ((r + i) >= 10) ? r + i - 9: r + i))),
-    ...m1.map(row => [...Array(5)].flatMap((_ ,i) => row.map(r => ((r + i) >= 10) ? r + i - 9: r + i))),
-    ...m2.map(row => [...Array(5)].flatMap((_ ,i) => row.map(r => ((r + i) >= 10) ? r + i - 9: r + i))),
-    ...m3.map(row => [...Array(5)].flatMap((_ ,i) => row.map(r => ((r + i) >= 10) ? r + i - 9: r + i))),
-    ...m4.map(row => [...Array(5)].flatMap((_ ,i) => row.map(r => ((r + i) >= 10) ? r + i - 9: r + i))),
-  ]
-}
-
 function processLines(map) {
-  const largeMap = fillMap(map)
-
-  const end = [largeMap.length - 1, largeMap[0].length - 1];
-  const result = aStar('0-0', toKey(end), getNeighbour(end), d(largeMap), h(end));
+  const end = [map.length - 1, map[0].length - 1];
+  const result = aStar('0-0', toKey(end), getNeighbour(end), d(map), h(end));
   return result.slice(1).map(n => {
     const [i,j] = n.split('-').map(Number);
-    return largeMap[i][j];
+    return map[i][j];
   }).sum();
 }
 
