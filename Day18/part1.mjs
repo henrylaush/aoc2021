@@ -15,20 +15,15 @@ function processLine(line) {
 // End template, start code
 
 function asList(line) {
-  const list = [];
-  let level = 0;
-  for (let c of line) {
-    if( c === '[') { level++ }
-    else if (c === ']') { level-- }
-    else if (c === ',') { continue }
-    else {
-      list.push({ level, value: Number(c) });
-    }
-  }
-  return list
+  return Array.from(line).reduce((p, c) => {
+    if( c === '[') return { ...p, level: p.level + 1 };
+    else if (c === ']') return { ...p, level: p.level - 1 };
+    else if (c === ',') return p;
+    return { ...p, list: [...p.list, { level: p.level, value: Number(c) }]};
+  }, { list: [], level: 0 }).list
 }
 
-function explode(list) {
+function explode(list) { 
   let cur = 0;
   while (cur < list.length - 1) {
     if (list[cur].level === 5 && list[cur + 1].level === 5) {
@@ -36,16 +31,17 @@ function explode(list) {
       const p1 = list[cur];
       const p2 = list[cur + 1];
       const right = list[cur + 2];
-      if (left) {
-        left.value += p1.value
-      }
-      if (right) {
-        right.value += p2.value
-      }
-      p1.level -= 1;
-      p1.value = 0;
-      list.splice(cur + 1, 1);
-      return { didSomething: true, list };
+      const replacement = [
+        ...(left ? [{ ...left, value: left.value + p1.value }] : []),
+        { level: (p1.level - 1), value: 0 },
+        ...(right ? [{ ...right, value: right.value + p2.value }] : []),
+      ];
+      const result = [
+        ...list.slice(0, Math.max(0, cur - 1)),
+        ...replacement,
+        ...list.slice(cur + 3)
+      ]
+      return { didSomething: true, list: result };
     }
     cur++
   }
@@ -78,15 +74,11 @@ function resolve(list) {
     result = exResult.list;
     didSomething = exResult.didSomething;
 
-    if (didSomething) { 
-      // console.log('after explode: ', result); 
-      continue 
-    }
+    if (didSomething) { continue; }
     
     const splitResult = split(result);
     result = splitResult.list;
     didSomething = splitResult.didSomething;
-    // if (didSomething) { console.log('after split: ', result);}
   }
   return result
 }
